@@ -1,0 +1,233 @@
+<html>
+    <head>
+        <style>
+        </style>
+    </head>
+    
+    <body>
+        
+        <canvas width="1900" height="800" id="myCanvas">
+        
+        </canvas>
+        
+        <script type="text/javascript">
+            
+            var canvas=document.getElementById('myCanvas');
+            var ctx=canvas.getContext("2d"); 
+            
+            ctx.fillStyle="#9acd32";
+            ctx.fillRect(0,0,1900,800);
+            
+            //var background = new Image();
+            //background.src = "lawn.jpg";
+
+            // Make sure the image is loaded first otherwise nothing will draw.
+            //background.onload = function(){
+              //  ctx.drawImage(background,0,0);   
+            //}
+            
+            document.getElementById("myCanvas").style.background = "url('lawn.jpg')";
+            
+            var zombieURLs=['normal/0.gif','normal/1.gif','normal/2.gif','normal/3.gif','normal/4.gif','normal/5.gif','normal/6.gif','normal/7.gif','normal/8.gif'];
+            //var normal2zombieURLs=['normal2/0.gif', 'normal2/1.gif', 'normal2/2.gif', 'normal2/3.gif', 'normal2/4.gif', 'normal2/5.gif'];
+            var soldierImage=new Image();
+            
+            soldierImage.src="soldier.jpg";
+                     
+            var zombieImages=[];
+            for(var i=0;i<zombieURLs.length;i++){
+                var zombieImage=new Image();
+                zombieImage.src=zombieURLs[i];
+                zombieImages.push(zombieImage);
+                
+            }
+            
+            
+            
+            var HEIGHT=800;                
+                    
+                var zombie1={};
+                zombie1.x=1900;
+                zombie1.y=(Math.random()*1000000)%HEIGHT;
+                zombie1.width=150;
+                zombie1.height=170;
+                zombie1.images=zombieImages;
+                 
+            var zombie2={};
+                zombie2.x=1900;
+                zombie2.y=(Math.random()*1000000)%HEIGHT;
+                zombie2.width=150;
+                zombie2.height=170;
+                zombie2.images=normal2zombieImages;
+          
+            
+            var soldier={};
+            soldier.x=100;
+            soldier.y=100;
+            soldier.width=150;
+            soldier.height=150;
+            soldier.image=soldierImage;
+            soldier.speed=12;
+            
+            
+            
+            
+            
+            
+            var fires = [];	
+		var lastFireAt = new Date().getTime();
+		var fireImage = new Image(); fireImage.src = ["https://i.imgur.com/pPvOuhq.png"];
+		function addFire(x,y){
+			var fire = {};
+			fire.images = [fireImage];
+			fire.x = x;
+			fire.y = y;
+			fire.width = 20;
+			fire.height = 20;
+			fire.speedX = 10;
+			fire.speedY = 0;
+			fire.active = true;			
+			fire.move = function(){
+				this.x += this.speedX; 
+				if( this.x <= 0 ){
+					this.active = false;
+				}
+			}
+			fires.push(fire);
+		}
+
+		function drawAndMoveFires(){
+			var temp = [];
+			for(var i=0;i<fires.length;i++){
+				fires[i].move();
+				drawObject(fires[i]);
+				// Only add active bullets				
+				if(fires[i].active){
+					temp.push(fires[i]);
+				}
+			}
+			fires = temp;
+		}
+
+            
+            
+            
+            
+            
+            
+            
+        var keyMap = {};
+		keyMap[38]	= { name :"up",		active:false , onactive: function() { soldier.y-=soldier.speed; } };
+		keyMap[40]	= { name :"down",	active:false , onactive: function() { soldier.y+=soldier.speed; } };
+		keyMap[37]	= { name :"left",	active:false , onactive: function() { soldier.x-=soldier.speed; } };
+		keyMap[39]	= { name :"right",	active:false , onactive: function() { soldier.x+=soldier.speed; } };
+        keyMap[32]	= { name :"space", 	active:false , onactive: function() { 
+             
+				addFire(soldier.x+150,soldier.y+30); 
+				
+        }
+		};
+            
+            
+            
+		//step 2
+		function handleKey(event, status) {
+			var currentController = keyMap[event.keyCode];
+			if(!!currentController){
+				currentController.active = status;
+			}
+		}
+
+
+        // Play music on loop 
+        // Music credits to Alan Walker ;)
+    	var isPlayingMusic = false; 
+        function playMusicNow(){
+        	isPlayingMusic = true;
+	        var audio = new Audio('https://nhacchuong68.com/wp-content/uploads/2019/07/Alan-Walker-Faded-Instrumental-Version.mp3');
+	        audio.addEventListener('ended', function () {
+	            this.currentTime = 0;
+	            this.play();
+	        }, false);
+
+	        audio.play();
+        }
+
+
+
+		document.addEventListener("keydown", function(event) {
+			if(!isPlayingMusic) playMusicNow();
+		    handleKey(event, true);
+		});
+
+		document.addEventListener("keyup", function(event) {
+		    handleKey(event, false);
+		});
+
+
+            
+            
+            var counter=0;
+            function drawObject(obj){
+                counter++;
+                var max=obj.images.length;
+                ctx.drawImage(obj.images[counter%max], obj.x, obj.y, obj.width, obj.height);
+            }
+            
+            function update(){
+                
+                ctx.fillStyle="#9acd32";
+                ctx.fillRect(0,0,1900,800);
+            
+                
+                var randomX=-5+Math.random()*10;
+                var randomY=-5+Math.random()*10;
+                
+                for(var key in keyMap){
+				var currentController = keyMap[key];
+				if( currentController.active){
+					currentController.onactive();
+				}
+			}
+                
+                
+                        drawObject(zombie1);
+                
+                
+                drawAndMoveFires();
+                
+                
+                ctx.drawImage(soldier.image, soldier.x, soldier.y, soldier.width, soldier.height);
+                
+                zombie1.x=zombie1.x-3;
+                
+                zombie1.x+=randomX;
+                zombie1.y+=randomY;
+                
+                
+                
+                
+                for(var i=0;i<fires.length;i++){
+				var fire = fires[i]; 
+                    
+                    
+					var x1x2zomb1 = (fire.x-zombie1.x)*(fire.x-zombie1.x);	
+					var y1y2zomb1 = (fire.y-zombie1.y)*(fire.y-zombie1.y);	
+					var distance1 = Math.sqrt( x1x2zomb1 + y1y2zomb1 );
+                    
+                    
+					if(distance1<zombie1.height-10){
+						zombie1.y = (Math.random()*10000000)%HEIGHT;
+						zombie1.x = 1900;
+						fire.active = false;
+					}
+                    
+                    
+				}
+			}                             
+            
+            setInterval(update,100);  
+            
+        </script>
+    </body>
+</html>
